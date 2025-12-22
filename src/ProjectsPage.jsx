@@ -39,6 +39,9 @@ function ProjectsPage() {
     endDate: "",
   });
 
+  // 🔍 search text for tasks
+  const [taskSearch, setTaskSearch] = useState("");
+
   // ---- API helpers ----
   const loadProjects = async () => {
     const res = await fetch(`${API_BASE}/projects`, {
@@ -246,6 +249,15 @@ function ProjectsPage() {
       await loadProjectDetails(selectedProject);
     }
   };
+
+  // 🔍 filter tasks locally
+  const filteredTasks = tasks.filter((t) => {
+    const q = taskSearch.toLowerCase();
+    return (
+      t.title.toLowerCase().includes(q) ||
+      (t.description || "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="layout">
@@ -460,20 +472,31 @@ function ProjectsPage() {
             <div className="main-grid">
               {/* Tasks list */}
               <div className="card">
-                <div className="card-header">
+                <div className="card-header" style={{ gap: 8 }}>
                   <h3 className="card-title">Tasks</h3>
                   <span className="card-badge">
-                    {tasks.length} task{tasks.length !== 1 ? "s" : ""}
+                    {filteredTasks.length} / {tasks.length}
                   </span>
+                  <input
+                    className="field-input"
+                    style={{ maxWidth: 220, marginLeft: "auto", fontSize: 12 }}
+                    placeholder="Search tasks..."
+                    value={taskSearch}
+                    onChange={(e) => setTaskSearch(e.target.value)}
+                  />
                 </div>
 
                 {tasks.length === 0 ? (
                   <p className="empty-text">
                     No tasks yet. Create your first task on the right.
                   </p>
+                ) : filteredTasks.length === 0 ? (
+                  <p className="empty-text">
+                    No tasks match this search.
+                  </p>
                 ) : (
                   <ul className="task-list">
-                    {tasks.map((t) => {
+                    {filteredTasks.map((t) => {
                       const isEditing = editingTaskId === t.id;
                       return (
                         <li
